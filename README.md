@@ -27,17 +27,21 @@ You can modify it for your demand.
 ### android provide interface for js
 	// table is string
 	getTotalCounter(table)
+	
 	// sql is string
 	query(sql)
+	
 	// table is string
 	// columns is field of array
 	// values is value of array corresponding to columns
 	insert(table, columns, values)
+	
 	// table is string
 	// columns is field of array
 	// values is value of array corresponding to columns
 	// whereCondition is string, ex: "where id = 1"
 	update(table, columns, values, whereCondition)
+	
 	// table is string
 	// whereCondition is string, ex: "where id = 1"
 	delete(table, whereCondition)
@@ -46,7 +50,8 @@ You can modify it for your demand.
 	// beacause android can't return 2d-array to js
 	// we provide interface that android call it one by one after selecting
 	dbQueryOneRow(sid, name, price, description)
-	// we provide interface that android call complete callback after calling 
+	
+	// we provide interface that android call complete callback after calling dbQueryOneRow
 	dbQueryComplete()
 -------------------
 # future
