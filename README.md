@@ -1,7 +1,7 @@
 # This is example - how do javascript use android sqlite
 To learn how do javascript use android sqlite, not html5 database.
 
-### how do javascript call android
+### how do android call javascript
 	// instantiate WebView
 	WebView webview = new WebView();
 	// set android object that js can call
@@ -11,7 +11,7 @@ To learn how do javascript use android sqlite, not html5 database.
 	webview.loadUrl("javascript:dbQueryComplete()");
 	// see more in UIActivity.java 
 	
-### how android call javascript
+### how javascript call android
 	// javascript call android
 	AndroidCalls.getTotalCounter(table);
 	// see more in assets/index.html
