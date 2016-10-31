@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Demo Page</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <style type="text/css">
+        .itemPicture {
+        width: 100px;
+        height: 100px;
+        }
+        .hidden {
+        display: hidden;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+</head>
+
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-1">
+        </div>
+        <div class="col-md-10">
+            <button id='btnAdd' type="button" class="btn btn-primary">
+                新增
+            </button>
+            <button id='btnPrevPage' disabled="disabled" type="button" class="btn btn-primary">
+                上一頁
+            </button>
+            <button id='btnNextPage' type="button" class="btn btn-primary">
+                下一頁
+            </button>
+        </div>
+        <div class="col-md-1">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-1">
+        </div>
+        <div id="content" class="col-md-10">
+        </div>
+        <div class="col-md-1">
+        </div>
+    </div>
+    <span class="hidden">
+        <a id="modal-799945" href="#modal-container-799945" role="button" class="btn" data-toggle="modal">Launch demo modal</a>
+    </span>
+    <div class="modal fade" id="modal-container-799945" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        ×
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                        <span id="title">Modal title</span>
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal" role="form">
+                        <input id="txtSid" type="hidden" />
+                        <div class="form-group">
+                            <label for="txtItemName" class="col-sm-2 control-label">
+                                商品名稱
+                            </label>
+                            <div class="col-sm-10">
+                                <input class="form-control" id="txtItemName" type="text" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="txtItemPrice" class="col-sm-2 control-label">
+                                商品價格
+                            </label>
+                            <div class="col-sm-10">
+                                <input class="form-control" id="txtItemPrice" type="text" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="txtItemDescription" class="col-sm-2 control-label">
+                                商品描述</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" id="txtItemDescription" type="text" />
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                        關閉
+                    </button>
+                    <button id="btnSave" type="button" class="btn btn-primary" data-dismiss="modal">
+                        確定
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+<script type="text/javascript">
+    var action = "";
+    var objectParent = null;
+
+    $(document).ready(function(){
+        // bind behavior to button: add, prev, next, save(edit or add)
+        bindInteractionToButton();
+        // get total counter
+        updateTotalInfo(setupPrevNextButton);
+        // select page 1
+        dbQuery();
+    });
+
+    function setupPrevNextButton() {
+        if (totalPage == 1) {
+            $("#btnNextPage").prop("disabled", "disabled");
+        }
+    }
+
+    function bindInteractionToButton() {
+        $("#btnAdd").click(function(){
+            action = "add";
+            $("#title").text("新增商品");
+            $("#modal-799945").click();
+        });
+
+        $("#btnSave").click(function(){
+            var itemName = $("#txtItemName").val();
+            var itemPrice = $("#txtItemPrice").val();
+            var itemDescription = $("#txtItemDescription").val();
+
+            if (action == "add") {
+                var values = [itemName, itemPrice, itemDescription];
+                dbInsert(table, columns, values); // insert
+            }
+
+            if (action == "edit") {
+                var values = [itemName, itemPrice, itemDescription];
+                var whereCondition = "sid=" + $("#txtSid").val();
+                dbUpdate(table, columns, values, whereCondition); // update 
+            }
+        });
+
+        $("#btnPrevPage").click(function() {
+            currentPage = currentPage - 1;
+            if (currentPage == 1) {
+                $("#btnPrevPage").prop("disabled", "disabled");
+            }
+            if (currentPage == (totalPage - 1)) {
+                $("#btnNextPage").prop("disabled", "");
+            }
+            $("#content").html("");
+
+            if (currentPage > 0) {
+                dbQuery();
+            } else {
+                currentPage = 1;
+            }
+        });
+
+        $("#btnNextPage").click(function() {
+            currentPage = currentPage + 1;
+            if (currentPage == 2) {
+                $("#btnPrevPage").prop("disabled", "");
+            }
+            if (currentPage == totalPage) {
+                $("#btnNextPage").prop("disabled", "disabled");
+            }
+            $("#content").html("");
+
+            if (currentPage <= totalPage) {
+                dbQuery();
+            } else {
+                currentPage = totalPage;
+            }
+        });
+    }
+
+    function bindAddDeleteToItem() {
+        $('.cbtnEdit').off('click');
+        $('.cbtnDelete').off('click');
+
+        $(".cbtnEdit").click(function(){
+            openEditPanel(this);
+        });
+
+        $(".cbtnDelete").click(function(){
+            if (!confirm("確定要刪除?")) {
+                return;
+            }
+            objectParent = $(this).parents(".item");;
+            var whereCondition = "sid=" + objectParent.find("#txtSid").val();
+            dbDelete(table, whereCondition); // delete
+        });
+    }
+
+    function openEditPanel(target) {
+        action = "edit";
+        objectParent =  $(target).parents(".item");
+
+        var sid = objectParent.find(".sid").val();
+        $("#txtSid").val(sid);
+
+        var itemName = objectParent.find(".itemName").text();
+        $("#txtItemName").val(itemName);
+
+        var itemPrice = objectParent.find(".itemPrice").text();
+        $("#txtItemPrice").val(itemPrice);
+
+        var itemDescription = objectParent.find(".itemDescription").text();
+         $("#txtItemDescription").val(itemDescription);
+
+        $("#title").text("編輯商品");
+        $("#modal-799945").click();
+    }
+
+    function addItem(sid,itemName,itemPrice,itemDescription) {
+        var content = '<div class="row item">'+
+                    '<div class="col-md-4">'+
+                        '<input id="txtSid" class="sid" type="hidden" value="' + sid + '" />' +
+                        '<div>'+
+                            '<span>商品名稱</span>'+
+                            '<span class="itemName">' + itemName + '</span>'+
+                        '</div>'+
+                        '<div>'+
+                            '<span>商品價格</span>'+
+                            '<span class="itemPrice">' + itemPrice + '</span>'+
+                        '</div>'+
+                    '</div>'+
+                    '<div class="col-md-4">'+
+                        '<span class="itemDescription">'+
+                            itemDescription+
+                        '</span>'+
+                    '</div>'+
+                    '<div class="col-md-2">'+
+                        '<div class="btn-group btn-group-vertical">'+
+                            '<button class="btn btn-primary cbtnEdit" type="button">'+
+                                '編輯'+
+                            '</button>'+
+                            '<button class="btn btn-default cbtnDelete" type="button">'+
+                                '刪除'+
+                            '</button>'+
+                        '</div>'+
+                    '</div>'+
+                '</div>';
+        $("#content").append(content);
+        bindAddDeleteToItem();
+    }
+
+    function editItem(values) {
+        var sid = values[0];
+        objectParent.find(".sid").val(sid);
+        var itemName = values[1];
+        objectParent.find(".itemName").text(itemName);
+        var itemPrice = values[2];
+        objectParent.find(".itemPrice").text(itemPrice);
+        var itemDescription = values[3];
+        objectParent.find(".itemDescription").text(itemDescription);
+    }
+    
+    // database setting
+    var table = "item";
+    var columns = ["itemName","itemPrice","itemDescription"];
+    var currentPage = 1;
+    var sizePerPage = 10;
+    var totalCounter = -1;
+    var totalPage = -1;
+    var sqlQuery = "select sid, itemName, itemPrice, itemDescription from item";
+    // interface between android & javascript
+    function updateTotalInfo(fnCallback) {
+        totalCounter = AndroidCalls.getTotalCounter(table);
+        totalPage = Math.ceil(totalCounter / sizePerPage);
+        if (fnCallback) {
+            fnCallback();
+        }
+    }
+    function dbQueryOneRow(sid, name, price, description) {
+        addItem(sid,name,price,description);
+    }
+    function dbQueryComplete() {
+        bindAddDeleteToItem();
+    }
+    function dbQuery() {
+        // get paging sql
+        var offset = ( currentPage - 1) * sizePerPage;
+        var rows = sizePerPage;
+        if (currentPage == totalPage ) {
+            var sizeLastPage = totalCounter % sizePerPage;
+            if (sizeLastPage > 0) {
+                rows = sizeLastPage;
+            }
+        }
+        var limit = " limit " + offset + ", " + rows;
+        var sql = sqlQuery + limit;
+
+        AndroidCalls.query(sql);
+    }
+    function dbInsert(table, columns, values) {
+        var row = AndroidCalls.insert(table, columns, values);
+        if (row > 0) {
+            updateTotalInfo();
+            dbQuery();
+        }
+    }
+    function dbUpdate(table, columns, values, whereCondition) {
+        var row = AndroidCalls.update(table, columns, values, whereCondition);
+        if (row > 0) {
+            editItem(values);
+        }
+    }
+    function dbDelete(table, whereCondition) {
+        var row = AndroidCalls.delete(table, whereCondition);
+        if (row > 0) {
+            updateTotalInfo();
+            dbQuery();
+        }
+    }
+</script>
